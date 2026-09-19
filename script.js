@@ -75,7 +75,7 @@ function clearResult() {
 const SECRET_A = 23;
 const SECRET_B = 11;
 const SECRET_C = 2012;
-const SECRET_URL = '';
+const SECRET_URL = 'https://raw.githubusercontent.com/quanglong100512-lang/hoangthai/main/hoangthai.mp4';
 
 /**
  * Kiểm tra mã bí mật. Nếu khớp thì trả về HTML easter egg.
