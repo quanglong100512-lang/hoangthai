@@ -1,6 +1,10 @@
 
 // ============================================================
-// Lấy các phần tử DOM
+// GIẢI HỆ PHƯƠNG TRÌNH BẬC NHẤT HAI ẨN
+// ============================================================
+
+// ============================================================
+// 1. LẤY CÁC PHẦN TỬ DOM
 // ============================================================
 
 const a1Input = document.getElementById('a1');
@@ -21,11 +25,11 @@ const resetBtn = document.getElementById('resetBtn');
 const resultBox = document.getElementById('result');
 
 // ============================================================
-// Hàm tiện ích
+// 2. HÀM TIỆN ÍCH
 // ============================================================
 
 /**
- * Ký hiệu phép toán hiển thị đẹp.
+ * Chuyển ký hiệu phép toán thành ký hiệu hiển thị.
  */
 function opSymbol(op) {
     return {
@@ -37,17 +41,17 @@ function opSymbol(op) {
 }
 
 /**
- * Định dạng số, giữ tối đa 6 chữ số thập phân.
+ * Định dạng số với tối đa 6 chữ số thập phân.
  */
 function formatNumber(n) {
-    if (!isFinite(n)) return '∞';
+    if (!Number.isFinite(n)) return '∞';
 
     const rounded = Math.round(n * 1e6) / 1e6;
     return rounded.toString();
 }
 
 /**
- * Cập nhật preview hệ phương trình theo thời gian thực.
+ * Cập nhật hệ phương trình xem trước.
  */
 function updatePreview() {
     const a1 = a1Input.value || '?';
@@ -66,7 +70,7 @@ function updatePreview() {
 }
 
 /**
- * Hiển thị kết quả.
+ * Hiển thị kết quả giải.
  */
 function showResult(html, type = 'info') {
     resultBox.className = 'result show ' + type;
@@ -82,21 +86,20 @@ function clearResult() {
 }
 
 // ============================================================
-// Easter Egg — mã bí mật và video GitHub
+// 3. EASTER EGG — VIDEO GITHUB
 // ============================================================
 
 const SECRET_A = 18;
 const SECRET_B = 12;
 const SECRET_C = 2012;
 
-// Video GitHub được nhúng trực tiếp trong trang web.
-// Dùng CDN jsDelivr thay cho raw.githubusercontent.com.
+// Video được nhúng trực tiếp bằng CDN jsDelivr.
 const SECRET_VIDEO =
     'https://cdn.jsdelivr.net/gh/quanglong100512-lang/hoangthai@main/hoangthai.mp4';
 
 /**
  * Kiểm tra mã bí mật.
- * Nếu khớp, hiển thị trình phát video ngay trên trang.
+ * Nếu đúng, hiển thị trình phát video ngay trong trang.
  */
 function checkEasterEgg(a1, b1, c1) {
     if (
@@ -145,12 +148,12 @@ function checkEasterEgg(a1, b1, c1) {
 }
 
 // ============================================================
-// Chuẩn hóa phương trình
+// 4. CHUẨN HÓA PHƯƠNG TRÌNH
 // ============================================================
 
 /**
  * Chuyển phương trình dạng a*x [op] b*y = c
- * về dạng chuẩn A*x + B*y = C.
+ * về dạng A*x + B*y = C.
  *
  * '+': A = a,   B = b,  C = c
  * '-': A = a,   B = -b, C = c
@@ -197,30 +200,47 @@ function parseEquation(a, b, c, op) {
 }
 
 // ============================================================
-// Giải hệ phương trình
+// 5. ĐỌC VÀ KIỂM TRA DỮ LIỆU
+// ============================================================
+
+/**
+ * Đọc một hệ số từ ô nhập.
+ * Nếu ô trống thì xem là 0.
+ */
+function readNumber(input) {
+    if (input.value.trim() === '') return 0;
+
+    const value = Number(input.value);
+
+    if (!Number.isFinite(value)) {
+        throw new Error('Vui lòng nhập hệ số hợp lệ.');
+    }
+
+    return value;
+}
+
+/**
+ * Kiểm tra người dùng đã nhập ít nhất một hệ số.
+ */
+function isFormEmpty() {
+    return [
+        a1Input,
+        b1Input,
+        c1Input,
+        a2Input,
+        b2Input,
+        c2Input
+    ].every(input => input.value.trim() === '');
+}
+
+// ============================================================
+// 6. GIẢI HỆ PHƯƠNG TRÌNH
 // ============================================================
 
 function solveSystem() {
-    const a1 = parseFloat(a1Input.value) || 0;
-    const b1 = parseFloat(b1Input.value) || 0;
-    const c1 = parseFloat(c1Input.value) || 0;
 
-    const a2 = parseFloat(a2Input.value) || 0;
-    const b2 = parseFloat(b2Input.value) || 0;
-    const c2 = parseFloat(c2Input.value) || 0;
-
-    const op1 = op1Select.value;
-    const op2 = op2Select.value;
-
-    // Kiểm tra input rỗng hoàn toàn.
-    if (
-        a1Input.value === '' &&
-        b1Input.value === '' &&
-        c1Input.value === '' &&
-        a2Input.value === '' &&
-        b2Input.value === '' &&
-        c2Input.value === ''
-    ) {
+    // Kiểm tra form rỗng.
+    if (isFormEmpty()) {
         showResult(
             '⚠️ Vui lòng nhập các hệ số của hệ phương trình.',
             'error'
@@ -229,32 +249,45 @@ function solveSystem() {
     }
 
     try {
-        // Chuẩn hóa về dạng A*x + B*y = C.
+        // Đọc hệ số.
+        const a1 = readNumber(a1Input);
+        const b1 = readNumber(b1Input);
+        const c1 = readNumber(c1Input);
+
+        const a2 = readNumber(a2Input);
+        const b2 = readNumber(b2Input);
+        const c2 = readNumber(c2Input);
+
+        const op1 = op1Select.value;
+        const op2 = op2Select.value;
+
+        // Chuẩn hóa hai phương trình.
         const { A: A1, B: B1, C: C1 } =
             parseEquation(a1, b1, c1, op1);
 
         const { A: A2, B: B2, C: C2 } =
             parseEquation(a2, b2, c2, op2);
 
+        // Tính định thức Cramer.
+        const D = A1 * B2 - A2 * B1;
+        const Dx = C1 * B2 - C2 * B1;
+        const Dy = A1 * C2 - A2 * C1;
+
+        // Chuẩn bị các bước giải.
         let step = '';
 
         step += 'Hệ đã chuẩn hóa:\n';
 
         step +=
-            `  (1) ${formatNumber(A1)}x + ` +
+            `(1) ${formatNumber(A1)}x + ` +
             `${formatNumber(B1)}y = ${formatNumber(C1)}\n`;
 
         step +=
-            `  (2) ${formatNumber(A2)}x + ` +
+            `(2) ${formatNumber(A2)}x + ` +
             `${formatNumber(B2)}y = ${formatNumber(C2)}\n\n`;
 
-        // Định thức Cramer.
-        const D = A1 * B2 - A2 * B1;
-        const Dx = C1 * B2 - C2 * B1;
-        const Dy = A1 * C2 - A2 * C1;
-
         step +=
-            `D  = A₁·B₂ − A₂·B₁ = ${formatNumber(D)}\n`;
+            `D = A₁·B₂ − A₂·B₁ = ${formatNumber(D)}\n`;
 
         step +=
             `Dx = C₁·B₂ − C₂·B₁ = ${formatNumber(Dx)}\n`;
@@ -262,13 +295,16 @@ function solveSystem() {
         step +=
             `Dy = A₁·C₂ − A₂·C₁ = ${formatNumber(Dy)}\n\n`;
 
-        // Kiểm tra mã bí mật.
+        // Kiểm tra mã bí mật dựa trên ba hệ số đầu tiên.
         const egg = checkEasterEgg(a1, b1, c1);
 
         let html = '';
 
+        // ----------------------------------------------------
+        // Trường hợp 1: Hệ có nghiệm duy nhất.
+        // ----------------------------------------------------
+
         if (D !== 0) {
-            // Hệ có nghiệm duy nhất.
             const x = Dx / D;
             const y = Dy / D;
 
@@ -286,9 +322,13 @@ function solveSystem() {
             html += egg;
 
             showResult(html, 'success');
+        }
 
-        } else if (Dx === 0 && Dy === 0) {
-            // Hệ có vô số nghiệm.
+        // ----------------------------------------------------
+        // Trường hợp 2: Hệ có vô số nghiệm.
+        // ----------------------------------------------------
+
+        else if (Dx === 0 && Dy === 0) {
             html +=
                 'ℹ️ <strong>Hệ có vô số nghiệm</strong>\n\n';
 
@@ -300,9 +340,13 @@ function solveSystem() {
             html += egg;
 
             showResult(html, 'info');
+        }
 
-        } else {
-            // Hệ vô nghiệm.
+        // ----------------------------------------------------
+        // Trường hợp 3: Hệ vô nghiệm.
+        // ----------------------------------------------------
+
+        else {
             html +=
                 '❌ <strong>Hệ vô nghiệm</strong>\n\n';
 
@@ -317,15 +361,19 @@ function solveSystem() {
         }
 
     } catch (err) {
-        showResult('❌ Lỗi: ' + err.message, 'error');
+        showResult(
+            '❌ Lỗi: ' + err.message,
+            'error'
+        );
     }
 }
 
 // ============================================================
-// Reset form
+// 7. RESET FORM
 // ============================================================
 
 function resetForm() {
+
     [
         a1Input,
         b1Input,
@@ -333,8 +381,8 @@ function resetForm() {
         a2Input,
         b2Input,
         c2Input
-    ].forEach((el) => {
-        el.value = '';
+    ].forEach(input => {
+        input.value = '';
     });
 
     op1Select.value = '+';
@@ -347,14 +395,17 @@ function resetForm() {
 }
 
 // ============================================================
-// Gắn sự kiện
+// 8. GẮN SỰ KIỆN
 // ============================================================
 
+// Nút giải hệ.
 solveBtn.addEventListener('click', solveSystem);
 
+// Nút xóa.
 resetBtn.addEventListener('click', resetForm);
 
-// Cập nhật preview khi nhập và nhấn Enter để giải.
+// Cập nhật preview khi nhập hệ số.
+// Nhấn Enter để giải hệ.
 [
     a1Input,
     b1Input,
@@ -362,23 +413,24 @@ resetBtn.addEventListener('click', resetForm);
     a2Input,
     b2Input,
     c2Input
-].forEach((el) => {
-    el.addEventListener('input', updatePreview);
+].forEach(input => {
 
-    el.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
+    input.addEventListener('input', updatePreview);
+
+    input.addEventListener('keydown', event => {
+        if (event.key === 'Enter') {
             solveSystem();
         }
     });
 });
 
-// Cập nhật preview khi đổi phép toán.
-[op1Select, op2Select].forEach((el) => {
-    el.addEventListener('change', updatePreview);
+// Cập nhật preview khi thay đổi phép toán.
+[op1Select, op2Select].forEach(select => {
+    select.addEventListener('change', updatePreview);
 });
 
 // ============================================================
-// Khởi tạo preview
+// 9. KHỞI TẠO
 // ============================================================
 
 updatePreview();
