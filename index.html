@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Giải hệ phương trình</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <h1>Giải hệ phương trình</h1>
+        <p class="subtitle">Nhập hệ số và chọn phép toán giữa x và y</p>
+
+        <div class="equation">
+            <span class="label">Phương trình 1:</span>
+            <input type="number" id="a1" placeholder="a₁" step="any">
+            <span class="var">x</span>
+            <select id="op1" class="op-select">
+                <option value="+">+</option>
+                <option value="-">−</option>
+                <option value="*">×</option>
+                <option value="/">÷</option>
+            </select>
+            <input type="number" id="b1" placeholder="b₁" step="any">
+            <span class="var">y</span>
+            <span class="eq">=</span>
+            <input type="number" id="c1" placeholder="c₁" step="any">
+        </div>
+
+        <div class="equation">
+            <span class="label">Phương trình 2:</span>
+            <input type="number" id="a2" placeholder="a₂" step="any">
+            <span class="var">x</span>
+            <select id="op2" class="op-select">
+                <option value="+">+</option>
+                <option value="-">−</option>
+                <option value="*">×</option>
+                <option value="/">÷</option>
+            </select>
+            <input type="number" id="b2" placeholder="b₂" step="any">
+            <span class="var">y</span>
+            <span class="eq">=</span>
+            <input type="number" id="c2" placeholder="c₂" step="any">
+        </div>
+
+        <div class="preview" id="preview">
+            <div class="preview-title">📝 Hệ phương trình của bạn:</div>
+            <div class="preview-eq" id="preview1">— x — y = —</div>
+            <div class="preview-eq" id="preview2">— x — y = —</div>
+        </div>
+
+        <div class="buttons">
+            <button id="solveBtn" class="btn-primary">Giải hệ</button>
+            <button id="resetBtn" class="btn-secondary">Xóa</button>
+        </div>
+
+        <div id="result" class="result"></div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
