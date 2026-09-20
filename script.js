@@ -1,487 +1,307 @@
 
-// ============================================================
-// LẤY CÁC PHẦN TỬ DOM
-// ============================================================
+"use strict";
 
-const a1Input = document.getElementById('a1');
-const b1Input = document.getElementById('b1');
-const c1Input = document.getElementById('c1');
-const op1Select = document.getElementById('op1');
+// Địa chỉ video cho hai lựa chọn
+const VIDEO_HUMA =
+    "https://quanglong100512-lang.github.io/hoangthai/huma.mp4";
 
-const a2Input = document.getElementById('a2');
-const b2Input = document.getElementById('b2');
-const c2Input = document.getElementById('c2');
-const op2Select = document.getElementById('op2');
+const VIDEO_HOANGTHAI =
+    "https://quanglong100512-lang.github.io/hoangthai/hoangthai.mp4";
 
-const preview1 = document.getElementById('preview1');
-const preview2 = document.getElementById('preview2');
+// Lấy phần tử HTML
+const ids = [
+    "a1", "b1", "c1", "op1",
+    "a2", "b2", "c2", "op2"
+];
 
-const solveBtn = document.getElementById('solveBtn');
-const resetBtn = document.getElementById('resetBtn');
-const resultBox = document.getElementById('result');
+const fields = Object.fromEntries(
+    ids.map(id => [id, document.getElementById(id)])
+);
 
-// ============================================================
-// CẤU HÌNH VIDEO BÍ MẬT
-// ============================================================
+const preview1 = document.getElementById("preview1");
+const preview2 = document.getElementById("preview2");
+const solveBtn = document.getElementById("solveBtn");
+const resetBtn = document.getElementById("resetBtn");
+const result = document.getElementById("result");
 
-// File huma.mp4 nằm cùng thư mục với index.html
-const VIDEO_URL = './huma.mp4';
+function getNumber(id) {
+    const value = fields[id].value.trim();
 
-// ============================================================
-// KIỂM TRA MÃ BÍ MẬT
-// ============================================================
+    if (value === "") {
+        return null;
+    }
 
-function checkEasterEgg(a1, b1, c1, op1, a2, b2, c2, op2) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+}
+
+function formatNumber(number) {
+    if (Math.abs(number) < 1e-10) {
+        return "0";
+    }
+
+    return Number(number.toFixed(6)).toString();
+}
+
+function formatTerm(coefficient, variable, isFirst = false) {
+    const sign = coefficient < 0 ? "−" : "+";
+    const absolute = Math.abs(coefficient);
+
+    let value = "";
+
+    if (absolute !== 1) {
+        value = formatNumber(absolute);
+    }
+
+    value += variable;
+
+    if (isFirst) {
+        return coefficient < 0 ? "−" + value : value;
+    }
+
+    return ` ${sign} ${value}`;
+}
+
+function makeEquation(a, b, c) {
+    const first = formatTerm(a, "x", true);
+    const second = formatTerm(b, "y");
+    return `${first}${second} = ${formatNumber(c)}`;
+}
+
+function updatePreview() {
+    const a1 = getNumber("a1");
+    const b1 = getNumber("b1");
+    const c1 = getNumber("c1");
+    const a2 = getNumber("a2");
+    const b2 = getNumber("b2");
+    const c2 = getNumber("c2");
+
+    if (a1 !== null && b1 !== null && c1 !== null) {
+        const signedB1 = fields.op1.value === "-" ? -b1 : b1;
+        preview1.textContent = makeEquation(a1, signedB1, c1);
+    } else {
+        preview1.textContent = "Nhập đủ hệ số phương trình 1";
+    }
+
+    if (a2 !== null && b2 !== null && c2 !== null) {
+        const signedB2 = fields.op2.value === "-" ? -b2 : b2;
+        preview2.textContent = makeEquation(a2, signedB2, c2);
+    } else {
+        preview2.textContent = "Nhập đủ hệ số phương trình 2";
+    }
+}
+
+function getSystem() {
+    const a1 = getNumber("a1");
+    const b1 = getNumber("b1");
+    const c1 = getNumber("c1");
+    const a2 = getNumber("a2");
+    const b2 = getNumber("b2");
+    const c2 = getNumber("c2");
+
+    if ([a1, b1, c1, a2, b2, c2].some(value => value === null)) {
+        return null;
+    }
+
+    return {
+        a1,
+        b1: fields.op1.value === "-" ? -b1 : b1,
+        c1,
+        a2,
+        b2: fields.op2.value === "-" ? -b2 : b2,
+        c2
+    };
+}
+
+// Kiểm tra hệ đặc biệt để bật câu hỏi
+function isSecretSystem(system) {
+    const epsilon = 1e-9;
+
+    const same = (a, b) => Math.abs(a - b) < epsilon;
+
     return (
-        a1 === 18 &&
-        b1 === 12 &&
-        c1 === 2012 &&
-        op1 === '+' &&
-        a2 === 1 &&
-        b2 === 1 &&
-        c2 === 5 &&
-        op2 === '+'
+        same(system.a1, 18) &&
+        same(system.b1, 12) &&
+        same(system.c1, 2012) &&
+        same(system.a2, 1) &&
+        same(system.b2, 1) &&
+        same(system.c2, 5)
     );
 }
 
-// ============================================================
-// HÀM TIỆN ÍCH
-// ============================================================
-
-function opSymbol(op) {
-    return {
-        '+': '+',
-        '-': '−',
-        '*': '×',
-        '/': '÷'
-    }[op] || op;
-}
-
-function formatNumber(n) {
-    if (!Number.isFinite(n)) return '∞';
-
-    const rounded = Math.round(n * 1e6) / 1e6;
-
-    return rounded.toString();
-}
-
-// ============================================================
-// CẬP NHẬT PREVIEW
-// ============================================================
-
-function updatePreview() {
-    const a1 = a1Input.value || '?';
-    const b1 = b1Input.value || '?';
-    const c1 = c1Input.value || '?';
-
-    const a2 = a2Input.value || '?';
-    const b2 = b2Input.value || '?';
-    const c2 = c2Input.value || '?';
-
-    preview1.textContent =
-        `${a1}x ${opSymbol(op1Select.value)} ${b1}y = ${c1}`;
-
-    preview2.textContent =
-        `${a2}x ${opSymbol(op2Select.value)} ${b2}y = ${c2}`;
-}
-
-// ============================================================
-// HIỂN THỊ KẾT QUẢ
-// ============================================================
-
-function showResult(html, type = 'info') {
-    resultBox.className = 'result show ' + type;
-    resultBox.innerHTML = html;
-}
-
-function clearResult() {
-    resultBox.className = 'result';
-    resultBox.innerHTML = '';
-}
-
-// ============================================================
-// PHÁT VIDEO TRÊN CHÍNH TRANG WEB
-// ============================================================
-
-function playSecretVideo() {
-    // Xóa trình phát cũ nếu đang tồn tại
-    const oldOverlay = document.getElementById('secretVideoOverlay');
-
-    if (oldOverlay) {
-        const oldVideo = oldOverlay.querySelector('video');
-
-        if (oldVideo) {
-            oldVideo.pause();
-            oldVideo.removeAttribute('src');
-            oldVideo.load();
-        }
-
-        oldOverlay.remove();
+function showSecretQuestion() {
+    // Không tạo nhiều hộp câu hỏi cùng lúc
+    if (document.querySelector(".secret-overlay")) {
+        return;
     }
 
-    // Tạo lớp phủ video
-    const overlay = document.createElement('div');
-    overlay.id = 'secretVideoOverlay';
+    const overlay = document.createElement("div");
+    overlay.className = "secret-overlay";
 
-    overlay.style.cssText = `
-        position: fixed;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.96);
-        z-index: 999999;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        padding: 16px;
-        box-sizing: border-box;
-    `;
+    const dialog = document.createElement("div");
+    dialog.className = "secret-dialog";
 
-    // Tiêu đề video
-    const title = document.createElement('div');
+    const heading = document.createElement("h2");
+    heading.textContent = "Bạn có sợ không?";
 
-    title.textContent = '🎬 Video bí mật';
+    const description = document.createElement("p");
+    description.textContent = "Chọn một câu trả lời nhé.";
 
-    title.style.cssText = `
-        color: white;
-        font-size: 22px;
-        font-weight: bold;
-        margin-bottom: 18px;
-        text-align: center;
-    `;
+    const buttons = document.createElement("div");
+    buttons.className = "secret-buttons";
 
-    // Tạo trình phát video
-    const video = document.createElement('video');
+    const yesButton = document.createElement("button");
+    yesButton.className = "yes-btn";
+    yesButton.textContent = "Có";
 
-    video.src = VIDEO_URL;
+    const noButton = document.createElement("button");
+    noButton.className = "no-btn";
+    noButton.textContent = "Không";
+
+    yesButton.addEventListener("click", () => {
+        overlay.remove();
+        openSecretVideo(VIDEO_HUMA);
+    });
+
+    noButton.addEventListener("click", () => {
+        overlay.remove();
+        openSecretVideo(VIDEO_HOANGTHAI);
+    });
+
+    buttons.append(yesButton, noButton);
+    dialog.append(heading, description, buttons);
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+}
+
+function openSecretVideo(videoUrl) {
+    const screen = document.createElement("div");
+    screen.className = "secret-video-screen";
+
+    const video = document.createElement("video");
+    video.src = videoUrl;
     video.controls = true;
     video.autoplay = true;
     video.playsInline = true;
+    video.preload = "auto";
 
-    // Để tắt tiếng ban đầu giúp trình duyệt dễ cho phép tự phát
-    video.muted = true;
+    const message = document.createElement("p");
+    message.className = "video-message";
+    message.textContent = "Đang mở video…";
 
-    video.style.cssText = `
-        display: block;
-        width: 100%;
-        max-width: 900px;
-        max-height: 70vh;
-        background: #000;
-        border-radius: 12px;
-        object-fit: contain;
-    `;
+    const closeButton = document.createElement("button");
+    closeButton.className = "video-close";
+    closeButton.textContent = "Đóng video";
 
-    // Thông báo lỗi tải video
-    const errorMessage = document.createElement('p');
-
-    errorMessage.textContent =
-        'Không thể tải video. Hãy kiểm tra file huma.mp4 trên GitHub.';
-
-    errorMessage.style.cssText = `
-        display: none;
-        color: #ff6b6b;
-        text-align: center;
-        margin-top: 12px;
-    `;
-
-    video.addEventListener('error', () => {
-        errorMessage.style.display = 'block';
-    });
-
-    // Nút đóng video
-    const closeBtn = document.createElement('button');
-
-    closeBtn.type = 'button';
-    closeBtn.textContent = '✖ Đóng video';
-
-    closeBtn.style.cssText = `
-        margin-top: 20px;
-        padding: 12px 26px;
-        border: none;
-        border-radius: 10px;
-        background: #e11d48;
-        color: white;
-        font-size: 16px;
-        font-weight: bold;
-        cursor: pointer;
-    `;
-
-    closeBtn.addEventListener('click', () => {
+    closeButton.addEventListener("click", () => {
         video.pause();
-        video.removeAttribute('src');
+        video.removeAttribute("src");
         video.load();
-        overlay.remove();
+        screen.remove();
     });
 
-    // Ghép các phần tử
-    overlay.appendChild(title);
-    overlay.appendChild(video);
-    overlay.appendChild(errorMessage);
-    overlay.appendChild(closeBtn);
-
-    document.body.appendChild(overlay);
-
-    // Thử tự phát video
-    video.play().catch(() => {
-        // Nếu trình duyệt chặn tự phát,
-        // người dùng có thể nhấn nút Play.
-        video.controls = true;
+    video.addEventListener("playing", () => {
+        message.textContent = "";
     });
-}
 
-// ============================================================
-// CHUẨN HÓA PHƯƠNG TRÌNH
-// Đưa về dạng A*x + B*y = C
-// ============================================================
+    video.addEventListener("error", () => {
+        message.textContent =
+            "Không tải được video. Kiểm tra đường dẫn hoặc trạng thái xuất bản GitHub Pages.";
+    });
 
-function parseEquation(a, b, c, op) {
-    let A;
-    let B;
-    let C;
+    screen.append(video, message, closeButton);
+    document.body.appendChild(screen);
 
-    switch (op) {
-        case '+':
-            A = a;
-            B = b;
-            C = c;
-            break;
+    // Thử phát ngay sau cú bấm Có/Không.
+    // Nếu trình duyệt chặn phát có tiếng, thử phát ở chế độ tắt tiếng.
+    const playAttempt = video.play();
 
-        case '-':
-            A = a;
-            B = -b;
-            C = c;
-            break;
+    if (playAttempt && typeof playAttempt.catch === "function") {
+        playAttempt.catch(() => {
+            video.muted = true;
 
-        case '*':
-            A = a * b;
-            B = 0;
-            C = c;
-            break;
-
-        case '/':
-            if (b === 0) {
-                throw new Error('Không thể chia cho 0 (b = 0).');
-            }
-
-            A = a / b;
-            B = 0;
-            C = c;
-            break;
-
-        default:
-            throw new Error('Phép toán không hợp lệ.');
+            video.play().catch(() => {
+                message.textContent =
+                    "Trình duyệt chưa cho phép tự phát. Hãy bấm nút phát trên video.";
+            });
+        });
     }
-
-    return { A, B, C };
 }
 
-// ============================================================
-// GIẢI HỆ PHƯƠNG TRÌNH
-// ============================================================
+function solveSystem(system) {
+    const { a1, b1, c1, a2, b2, c2 } = system;
 
-function solveSystem() {
-    // Lấy giá trị đầu vào
-    const a1 = parseFloat(a1Input.value);
-    const b1 = parseFloat(b1Input.value);
-    const c1 = parseFloat(c1Input.value);
+    const determinant = a1 * b2 - a2 * b1;
+    const determinantX = c1 * b2 - c2 * b1;
+    const determinantY = a1 * c2 - a2 * c1;
 
-    const a2 = parseFloat(a2Input.value);
-    const b2 = parseFloat(b2Input.value);
-    const c2 = parseFloat(c2Input.value);
+    const epsilon = 1e-10;
 
-    const op1 = op1Select.value;
-    const op2 = op2Select.value;
+    if (Math.abs(determinant) > epsilon) {
+        const x = determinantX / determinant;
+        const y = determinantY / determinant;
 
-    // Kiểm tra các ô nhập
-    const inputs = [
-        a1Input, b1Input, c1Input,
-        a2Input, b2Input, c2Input
-    ];
-
-    if (inputs.some(input => input.value.trim() === '')) {
-        showResult(
-            '⚠️ Vui lòng nhập đầy đủ các hệ số của hệ phương trình.',
-            'error'
-        );
+        result.className = "result success";
+        result.innerHTML =
+            `<strong>Hệ có nghiệm duy nhất:</strong><br>` +
+            `x = ${formatNumber(x)}<br>` +
+            `y = ${formatNumber(y)}`;
 
         return;
     }
 
-    // Kiểm tra số hợp lệ
-    const values = [a1, b1, c1, a2, b2, c2];
-
-    if (!values.every(Number.isFinite)) {
-        showResult(
-            '⚠️ Các hệ số phải là những số hợp lệ.',
-            'error'
-        );
-
-        return;
-    }
-
-    // ========================================================
-    // KIỂM TRA MÃ BÍ MẬT
-    // ========================================================
-
-    const isSecret = checkEasterEgg(
-        a1, b1, c1, op1,
-        a2, b2, c2, op2
-    );
-
-    if (isSecret) {
-        playSecretVideo();
-    }
-
-    // ========================================================
-    // GIẢI HỆ
-    // ========================================================
-
-    try {
-        const { A: A1, B: B1, C: C1 } =
-            parseEquation(a1, b1, c1, op1);
-
-        const { A: A2, B: B2, C: C2 } =
-            parseEquation(a2, b2, c2, op2);
-
-        // Tạo các bước giải
-        let step = '';
-
-        step += 'Hệ đã chuẩn hóa:\n';
-
-        step +=
-            `  (1) ${formatNumber(A1)}x + ${formatNumber(B1)}y = ${formatNumber(C1)}\n`;
-
-        step +=
-            `  (2) ${formatNumber(A2)}x + ${formatNumber(B2)}y = ${formatNumber(C2)}\n\n`;
-
-        // Định thức Cramer
-        const D = A1 * B2 - A2 * B1;
-        const Dx = C1 * B2 - C2 * B1;
-        const Dy = A1 * C2 - A2 * C1;
-
-        step +=
-            `D  = A₁·B₂ − A₂·B₁ = ${formatNumber(D)}\n`;
-
-        step +=
-            `Dx = C₁·B₂ − C₂·B₁ = ${formatNumber(Dx)}\n`;
-
-        step +=
-            `Dy = A₁·C₂ − A₂·C₁ = ${formatNumber(Dy)}\n\n`;
-
-        let html = '';
-
-        // ====================================================
-        // HỆ CÓ NGHIỆM DUY NHẤT
-        // ====================================================
-
-        if (D !== 0) {
-            const x = Dx / D;
-            const y = Dy / D;
-
-            html += '✅ <strong>Hệ có nghiệm duy nhất</strong>\n\n';
-
-            html += `<div class="step-box">${step}</div>`;
-
-            html +=
-                `📌 <span class="highlight">x = ${formatNumber(x)}</span>\n`;
-
-            html +=
-                `📌 <span class="highlight">y = ${formatNumber(y)}</span>`;
-
-            showResult(html, 'success');
-        }
-
-        // ====================================================
-        // HỆ CÓ VÔ SỐ NGHIỆM
-        // ====================================================
-
-        else if (Dx === 0 && Dy === 0) {
-            html += 'ℹ️ <strong>Hệ có vô số nghiệm</strong>\n\n';
-
-            html += `<div class="step-box">${step}</div>`;
-
-            html += '→ D = Dx = Dy = 0 → hệ vô số nghiệm.';
-
-            showResult(html, 'info');
-        }
-
-        // ====================================================
-        // HỆ VÔ NGHIỆM
-        // ====================================================
-
-        else {
-            html += '❌ <strong>Hệ vô nghiệm</strong>\n\n';
-
-            html += `<div class="step-box">${step}</div>`;
-
-            html +=
-                '→ D = 0 nhưng Dx ≠ 0 hoặc Dy ≠ 0 → hệ vô nghiệm.';
-
-            showResult(html, 'error');
-        }
-
-    } catch (err) {
-        showResult('❌ Lỗi: ' + err.message, 'error');
+    if (
+        Math.abs(determinantX) < epsilon &&
+        Math.abs(determinantY) < epsilon
+    ) {
+        result.className = "result success";
+        result.textContent =
+            "Hệ có vô số nghiệm.";
+    } else {
+        result.className = "result error";
+        result.textContent =
+            "Hệ vô nghiệm.";
     }
 }
 
-// ============================================================
-// RESET FORM
-// ============================================================
+function handleSolve() {
+    const system = getSystem();
+
+    if (!system) {
+        result.className = "result error";
+        result.textContent = "Mày hãy nhập đầy đủ các hệ số hợp lệ trước đã.";
+        return;
+    }
+
+    if (isSecretSystem(system)) {
+        showSecretQuestion();
+    }
+
+    solveSystem(system);
+}
 
 function resetForm() {
-    [
-        a1Input, b1Input, c1Input,
-        a2Input, b2Input, c2Input
-    ].forEach((el) => {
-        el.value = '';
-    });
-
-    op1Select.value = '+';
-    op2Select.value = '+';
-
-    clearResult();
-    updatePreview();
-
-    a1Input.focus();
-}
-
-// ============================================================
-// GẮN SỰ KIỆN CHO NÚT
-// ============================================================
-
-solveBtn.addEventListener('click', solveSystem);
-
-resetBtn.addEventListener('click', resetForm);
-
-// ============================================================
-// CẬP NHẬT PREVIEW VÀ NHẤN ENTER ĐỂ GIẢI
-// ============================================================
-
-[
-    a1Input, b1Input, c1Input,
-    a2Input, b2Input, c2Input
-].forEach((el) => {
-    el.addEventListener('input', updatePreview);
-
-    el.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            solveSystem();
+    ids.forEach(id => {
+        if (id.startsWith("op")) {
+            fields[id].value = "+";
+        } else {
+            fields[id].value = "";
         }
     });
+
+    result.className = "result";
+    result.textContent = "Kết quả sẽ hiển thị ở đây.";
+
+    updatePreview();
+}
+
+ids.forEach(id => {
+    fields[id].addEventListener("input", updatePreview);
+    fields[id].addEventListener("change", updatePreview);
 });
 
-// ============================================================
-// CẬP NHẬT PREVIEW KHI ĐỔI PHÉP TOÁN
-// ============================================================
+solveBtn.addEventListener("click", handleSolve);
+resetBtn.addEventListener("click", resetForm);
 
-[op1Select, op2Select].forEach((el) => {
-    el.addEventListener('change', updatePreview);
-});
-
-// ============================================================
-// KHỞI TẠO PREVIEW
-// ============================================================
-
+// Khởi tạo giao diện
 updatePreview();
