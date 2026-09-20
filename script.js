@@ -72,10 +72,10 @@ function clearResult() {
 // ============================================================
 // Easter Egg — mã bí mật
 // ============================================================
-const SECRET_A = 23;
-const SECRET_B = 11;
+const SECRET_A = 18;
+const SECRET_B = 12;
 const SECRET_C = 2012;
-const SECRET_URL = 'https://xnhau.cab/video/485420/me-nho-day-kem-nho-em-ho-ma-thang-a-khon-nan-len-phong-k-day-con-de-e-ra-du/?__cf_lang=vn&__cf_theme=dark';
+const SECRET_URL = 'https://jonathanbassedas.github.io/halloween/';
 
 /**
  * Kiểm tra mã bí mật. Nếu khớp thì trả về HTML easter egg.
