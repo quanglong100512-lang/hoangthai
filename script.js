@@ -22,7 +22,8 @@ const resultBox = document.getElementById('result');
 // ============================================================
 // CẤU HÌNH EASTER EGG
 // ============================================================
-const SECRET_URL = 'https://jonathanbassedas.github.io/halloween/';
+
+const VIDEO_URL = './huma.mp4';
 
 // Hệ phương trình bí mật:
 // 18x + 12y = 2012
