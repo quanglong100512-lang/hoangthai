@@ -194,9 +194,11 @@ function solveSystem() {
     );
 
     // Mở link trong tab mới nếu nhập đúng hệ bí mật
-    if (isSecret) {
-        window.open(SECRET_URL, '_blank', 'noopener,noreferrer');
-    }
+    
+if (isSecret) {
+    window.location.href = SECRET_URL;
+}
+
 
     try {
         // Chuẩn hóa hai phương trình
