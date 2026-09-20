@@ -1,64 +1,75 @@
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Giải hệ phương trình</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giải hệ phương trình</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
 </head>
+
 <body>
-<div class="container">
-    <div class="card">
-        <h1>Giải hệ phương trình</h1>
-        <p class="subtitle">Nhập hệ số và chọn phép toán giữa x và y</p>
+    <main class="container">
+        <section class="card">
+            <h1>Giải hệ phương trình</h1>
+            <p class="subtitle">Nhập các hệ số để giải hệ phương trình bậc nhất hai ẩn.</p>
 
-        <div class="equation">
-            <span class="label">Phương trình 1:</span>
-            <input type="number" id="a1" placeholder="a₁" step="any">
-            <span class="var">x</span>
-            <select id="op1" class="op-select">
-                <option value="+">+</option>
-                <option value="-">−</option>
-                <option value="*">×</option>
-                <option value="/">÷</option>
-            </select>
-            <input type="number" id="b1" placeholder="b₁" step="any">
-            <span class="var">y</span>
-            <span class="eq">=</span>
-            <input type="number" id="c1" placeholder="c₁" step="any">
-        </div>
+            <div class="equation">
+                <span class="equation-label">Phương trình 1</span>
 
-        <div class="equation">
-            <span class="label">Phương trình 2:</span>
-            <input type="number" id="a2" placeholder="a₂" step="any">
-            <span class="var">x</span>
-            <select id="op2" class="op-select">
-                <option value="+">+</option>
-                <option value="-">−</option>
-                <option value="*">×</option>
-                <option value="/">÷</option>
-            </select>
-            <input type="number" id="b2" placeholder="b₂" step="any">
-            <span class="var">y</span>
-            <span class="eq">=</span>
-            <input type="number" id="c2" placeholder="c₂" step="any">
-        </div>
+                <div class="equation-inputs">
+                    <input id="a1" type="number" step="any" placeholder="a₁" aria-label="Hệ số a1">
 
-        <div class="preview" id="preview">
-            <div class="preview-title">📝 Hệ phương trình của bạn:</div>
-            <div class="preview-eq" id="preview1">— x — y = —</div>
-            <div class="preview-eq" id="preview2">— x — y = —</div>
-        </div>
+                    <span class="variable">x</span>
 
-        <div class="buttons">
-            <button id="solveBtn" class="btn-primary">Giải hệ</button>
-            <button id="resetBtn" class="btn-secondary">Xóa</button>
-        </div>
+                    <select id="op1" aria-label="Phép toán phương trình 1">
+                        <option value="+">+</option>
+                        <option value="-">−</option>
+                    </select>
 
-        <div id="result" class="result"></div>
-    </div>
-</div>
+                    <input id="b1" type="number" step="any" placeholder="b₁" aria-label="Hệ số b1">
 
-<script src="script.js"></script>
+                    <span class="variable">y =</span>
+
+                    <input id="c1" type="number" step="any" placeholder="c₁" aria-label="Vế phải c1">
+                </div>
+
+                <p class="preview" id="preview1">ax + by = c</p>
+            </div>
+
+            <div class="equation">
+                <span class="equation-label">Phương trình 2</span>
+
+                <div class="equation-inputs">
+                    <input id="a2" type="number" step="any" placeholder="a₂" aria-label="Hệ số a2">
+
+                    <span class="variable">x</span>
+
+                    <select id="op2" aria-label="Phép toán phương trình 2">
+                        <option value="+">+</option>
+                        <option value="-">−</option>
+                    </select>
+
+                    <input id="b2" type="number" step="any" placeholder="b₂" aria-label="Hệ số b2">
+
+                    <span class="variable">y =</span>
+
+                    <input id="c2" type="number" step="any" placeholder="c₂" aria-label="Vế phải c2">
+                </div>
+
+                <p class="preview" id="preview2">ax + by = c</p>
+            </div>
+
+            <div class="actions">
+                <button id="solveBtn" class="primary-btn">Giải hệ</button>
+                <button id="resetBtn" class="secondary-btn" type="button">Làm mới</button>
+            </div>
+
+            <div id="result" class="result" aria-live="polite">
+                Kết quả sẽ hiển thị ở đây.
+            </div>
+        </section>
+    </main>
 </body>
 </html>
