@@ -2,6 +2,7 @@
 // ============================================================
 // LẤY CÁC PHẦN TỬ DOM
 // ============================================================
+
 const a1Input = document.getElementById('a1');
 const b1Input = document.getElementById('b1');
 const c1Input = document.getElementById('c1');
@@ -20,14 +21,15 @@ const resetBtn = document.getElementById('resetBtn');
 const resultBox = document.getElementById('result');
 
 // ============================================================
-// CẤU HÌNH EASTER EGG
+// CẤU HÌNH VIDEO BÍ MẬT
 // ============================================================
 
+// File huma.mp4 nằm cùng thư mục với index.html
 const VIDEO_URL = './huma.mp4';
 
-// Hệ phương trình bí mật:
-// 18x + 12y = 2012
-// 1x + 1y = 5
+// ============================================================
+// KIỂM TRA MÃ BÍ MẬT
+// ============================================================
 
 function checkEasterEgg(a1, b1, c1, op1, a2, b2, c2, op2) {
     return (
@@ -60,9 +62,7 @@ function formatNumber(n) {
 
     const rounded = Math.round(n * 1e6) / 1e6;
 
-    return Number.isInteger(rounded)
-        ? rounded.toString()
-        : rounded.toString();
+    return rounded.toString();
 }
 
 // ============================================================
@@ -100,12 +100,145 @@ function clearResult() {
 }
 
 // ============================================================
+// PHÁT VIDEO TRÊN CHÍNH TRANG WEB
+// ============================================================
+
+function playSecretVideo() {
+    // Xóa trình phát cũ nếu đang tồn tại
+    const oldOverlay = document.getElementById('secretVideoOverlay');
+
+    if (oldOverlay) {
+        const oldVideo = oldOverlay.querySelector('video');
+
+        if (oldVideo) {
+            oldVideo.pause();
+            oldVideo.removeAttribute('src');
+            oldVideo.load();
+        }
+
+        oldOverlay.remove();
+    }
+
+    // Tạo lớp phủ video
+    const overlay = document.createElement('div');
+    overlay.id = 'secretVideoOverlay';
+
+    overlay.style.cssText = `
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.96);
+        z-index: 999999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 16px;
+        box-sizing: border-box;
+    `;
+
+    // Tiêu đề video
+    const title = document.createElement('div');
+
+    title.textContent = '🎬 Video bí mật';
+
+    title.style.cssText = `
+        color: white;
+        font-size: 22px;
+        font-weight: bold;
+        margin-bottom: 18px;
+        text-align: center;
+    `;
+
+    // Tạo trình phát video
+    const video = document.createElement('video');
+
+    video.src = VIDEO_URL;
+    video.controls = true;
+    video.autoplay = true;
+    video.playsInline = true;
+
+    // Để tắt tiếng ban đầu giúp trình duyệt dễ cho phép tự phát
+    video.muted = true;
+
+    video.style.cssText = `
+        display: block;
+        width: 100%;
+        max-width: 900px;
+        max-height: 70vh;
+        background: #000;
+        border-radius: 12px;
+        object-fit: contain;
+    `;
+
+    // Thông báo lỗi tải video
+    const errorMessage = document.createElement('p');
+
+    errorMessage.textContent =
+        'Không thể tải video. Hãy kiểm tra file huma.mp4 trên GitHub.';
+
+    errorMessage.style.cssText = `
+        display: none;
+        color: #ff6b6b;
+        text-align: center;
+        margin-top: 12px;
+    `;
+
+    video.addEventListener('error', () => {
+        errorMessage.style.display = 'block';
+    });
+
+    // Nút đóng video
+    const closeBtn = document.createElement('button');
+
+    closeBtn.type = 'button';
+    closeBtn.textContent = '✖ Đóng video';
+
+    closeBtn.style.cssText = `
+        margin-top: 20px;
+        padding: 12px 26px;
+        border: none;
+        border-radius: 10px;
+        background: #e11d48;
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+    `;
+
+    closeBtn.addEventListener('click', () => {
+        video.pause();
+        video.removeAttribute('src');
+        video.load();
+        overlay.remove();
+    });
+
+    // Ghép các phần tử
+    overlay.appendChild(title);
+    overlay.appendChild(video);
+    overlay.appendChild(errorMessage);
+    overlay.appendChild(closeBtn);
+
+    document.body.appendChild(overlay);
+
+    // Thử tự phát video
+    video.play().catch(() => {
+        // Nếu trình duyệt chặn tự phát,
+        // người dùng có thể nhấn nút Play.
+        video.controls = true;
+    });
+}
+
+// ============================================================
 // CHUẨN HÓA PHƯƠNG TRÌNH
 // Đưa về dạng A*x + B*y = C
 // ============================================================
 
 function parseEquation(a, b, c, op) {
-    let A, B, C;
+    let A;
+    let B;
+    let C;
 
     switch (op) {
         case '+':
@@ -148,7 +281,7 @@ function parseEquation(a, b, c, op) {
 // ============================================================
 
 function solveSystem() {
-    // Lấy dữ liệu đầu vào
+    // Lấy giá trị đầu vào
     const a1 = parseFloat(a1Input.value);
     const b1 = parseFloat(b1Input.value);
     const c1 = parseFloat(c1Input.value);
@@ -160,7 +293,7 @@ function solveSystem() {
     const op1 = op1Select.value;
     const op2 = op2Select.value;
 
-    // Kiểm tra dữ liệu rỗng
+    // Kiểm tra các ô nhập
     const inputs = [
         a1Input, b1Input, c1Input,
         a2Input, b2Input, c2Input
@@ -171,10 +304,11 @@ function solveSystem() {
             '⚠️ Vui lòng nhập đầy đủ các hệ số của hệ phương trình.',
             'error'
         );
+
         return;
     }
 
-    // Kiểm tra dữ liệu có phải số hợp lệ không
+    // Kiểm tra số hợp lệ
     const values = [a1, b1, c1, a2, b2, c2];
 
     if (!values.every(Number.isFinite)) {
@@ -182,6 +316,7 @@ function solveSystem() {
             '⚠️ Các hệ số phải là những số hợp lệ.',
             'error'
         );
+
         return;
     }
 
@@ -194,22 +329,22 @@ function solveSystem() {
         a2, b2, c2, op2
     );
 
-    // Mở link trong tab mới nếu nhập đúng hệ bí mật
-    
-if (isSecret) {
-    window.location.href = SECRET_URL;
-}
+    if (isSecret) {
+        playSecretVideo();
+    }
 
+    // ========================================================
+    // GIẢI HỆ
+    // ========================================================
 
     try {
-        // Chuẩn hóa hai phương trình
         const { A: A1, B: B1, C: C1 } =
             parseEquation(a1, b1, c1, op1);
 
         const { A: A2, B: B2, C: C2 } =
             parseEquation(a2, b2, c2, op2);
 
-        // Tạo phần trình bày các bước giải
+        // Tạo các bước giải
         let step = '';
 
         step += 'Hệ đã chuẩn hóa:\n';
@@ -220,7 +355,7 @@ if (isSecret) {
         step +=
             `  (2) ${formatNumber(A2)}x + ${formatNumber(B2)}y = ${formatNumber(C2)}\n\n`;
 
-        // Tính định thức Cramer
+        // Định thức Cramer
         const D = A1 * B2 - A2 * B1;
         const Dx = C1 * B2 - C2 * B1;
         const Dy = A1 * C2 - A2 * C1;
@@ -237,7 +372,7 @@ if (isSecret) {
         let html = '';
 
         // ====================================================
-        // TRƯỜNG HỢP 1: HỆ CÓ NGHIỆM DUY NHẤT
+        // HỆ CÓ NGHIỆM DUY NHẤT
         // ====================================================
 
         if (D !== 0) {
@@ -258,7 +393,7 @@ if (isSecret) {
         }
 
         // ====================================================
-        // TRƯỜNG HỢP 2: HỆ CÓ VÔ SỐ NGHIỆM
+        // HỆ CÓ VÔ SỐ NGHIỆM
         // ====================================================
 
         else if (Dx === 0 && Dy === 0) {
@@ -272,7 +407,7 @@ if (isSecret) {
         }
 
         // ====================================================
-        // TRƯỜNG HỢP 3: HỆ VÔ NGHIỆM
+        // HỆ VÔ NGHIỆM
         // ====================================================
 
         else {
@@ -292,7 +427,7 @@ if (isSecret) {
 }
 
 // ============================================================
-// XÓA FORM
+// RESET FORM
 // ============================================================
 
 function resetForm() {
@@ -321,8 +456,7 @@ solveBtn.addEventListener('click', solveSystem);
 resetBtn.addEventListener('click', resetForm);
 
 // ============================================================
-// CẬP NHẬT PREVIEW KHI NHẬP DỮ LIỆU
-// Nhấn Enter để giải hệ
+// CẬP NHẬT PREVIEW VÀ NHẤN ENTER ĐỂ GIẢI
 // ============================================================
 
 [
@@ -347,7 +481,7 @@ resetBtn.addEventListener('click', resetForm);
 });
 
 // ============================================================
-// KHỞI TẠO
+// KHỞI TẠO PREVIEW
 // ============================================================
 
 updatePreview();
